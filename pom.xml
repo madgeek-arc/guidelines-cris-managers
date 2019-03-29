@@ -3,12 +3,24 @@
 	<groupId>eu.openaire</groupId>
 	<artifactId>guidelines-cris-managers</artifactId>
 	<version>1.1.2-SNAPSHOT</version>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<properties>
 		<doi>-</doi><!-- the DOI of the release or "-" for no DOI -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
 	<build>
+		<resources>
+			<resource>
+				<!--<targetPath>META-INF/</targetPath>-->
+				<filtering>false</filtering>
+				<directory>${basedir}</directory>
+				<includes>
+					<include>**/*.xsd</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -96,6 +108,44 @@
 						<version>9.8.0-12</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb22-plugin</artifactId>
+				<version>0.10.0</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<extension>true</extension>
+					<schemaDirectory>${basedir}/schemas</schemaDirectory>
+					<schemaIncludes>
+						<schemaInclude>cached/oai-identifier.xsd</schemaInclude>
+						<schemaInclude>cached/OAI-PMH.xsd</schemaInclude>
+						<!-- schemaInclude>openaire-cerif-profile.xsd</schemaInclude -->
+					</schemaIncludes>
+					<bindingDirectory>src/main/xjc</bindingDirectory>
+					<bindingIncludes>
+						<include>*.xjc</include>
+					</bindingIncludes>
+					<encoding>UTF-8</encoding>
+					<locale>en</locale>
+					<args>
+						<arg>-Xannotate</arg>
+					</args>
+					<plugins>
+						<plugin>
+							<groupId>org.jvnet.jaxb2_commons</groupId>
+							<artifactId>jaxb2-basics-annotate</artifactId>
+							<version>1.0.4</version>
+						</plugin>
+					</plugins>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
