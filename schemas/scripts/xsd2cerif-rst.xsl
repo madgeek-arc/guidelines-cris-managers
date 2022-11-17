@@ -114,7 +114,7 @@
 
 Internal Identifier
 ^^^^^^^^^^^^^^^^^^^
-:Use: mandatory (1)
+:Use: mandatory (1) in top level entity. When embedded in other entities the Internal Identifier must be included only for managed information (i.e. entities that have a concrete record in the local CRIS system). See `Metadata representation in CERIF XML &lt;https://openaire-guidelines-for-cris-managers.readthedocs.io/en/v1.1.1/implementation.html#metadata-representation-in-cerif-xml&gt;`_
 :Representation: XML attribute ``id``
 :CERIF: the </xsl:text><xsl:value-of select="substring-after( @cflink:entity, 'https://w3id.org/cerif/model#' )"/><xsl:text>Identifier attribute (`&lt;</xsl:text><xsl:value-of select="concat( @cflink:entity, '.', substring-after( @cflink:entity, 'https://w3id.org/cerif/model#' ), 'Identifier' )"/><xsl:text>&gt;`_)
 
@@ -201,19 +201,24 @@ Internal Identifier
 	</xsl:template>
 
 	<xsl:function name="cf:formatUrl">
-		<xsl:param name="value" as="xs:string"/>
-		<xsl:choose>
-			<xsl:when test="starts-with( $value, 'http:' ) or starts-with( $value, 'https:' ) or starts-with( $value, 'urn:' )">
-				<xsl:text>`&lt;</xsl:text>
-				<xsl:value-of select="$value"/>
-				<xsl:text>&gt;`_</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>``</xsl:text>
-				<xsl:value-of select="$value"/>
-				<xsl:text>``</xsl:text>
-			</xsl:otherwise>
-		</xsl:choose>
+		<xsl:param name="values" as="xs:string+"/>
+		<xsl:for-each select="$values">
+			<xsl:if test="position() &gt; 1">
+				<xsl:text> </xsl:text>
+			</xsl:if>
+			<xsl:choose>
+				<xsl:when test="starts-with( ., 'http:' ) or starts-with( ., 'https:' ) or starts-with( ., 'urn:' )">
+					<xsl:text>`&lt;</xsl:text>
+					<xsl:value-of select="."/>
+					<xsl:text>&gt;`_</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>``</xsl:text>
+					<xsl:value-of select="."/>
+					<xsl:text>``</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:for-each>
 	</xsl:function>
 
 	<xsl:template match="xs:group[ @ref ]" mode="#all">
@@ -239,6 +244,7 @@ Internal Identifier
 			<xsl:when test="@type = 'cfLinkWithDisplayNameToPersonOrOrgUnit__Type'"> with embedded XML element ``OrgUnit`` or ``Person``. A ``DisplayName`` may be specified, too.</xsl:when>
 			<xsl:when test="@type = 'cfLinkWithDisplayNameToOrgUnit__Type'"> with embedded XML element ``OrgUnit``. A ``DisplayName`` may be specified, too.</xsl:when>
             <xsl:when test="@type = 'cfString__Type'"/>
+            <xsl:when test="@type = 'cfDate__Type'"/>
             <xsl:when test="not( @type )">
 				<xsl:variable name="s1">
 					<xsl:apply-templates select="xs:complexType/xs:complexContent/xs:extension/(xs:sequence|xs:choice)/xs:element" mode="name-verbatim"/>
@@ -419,16 +425,22 @@ Internal Identifier
 		<xsl:param name="prefix" select="''"/>
 		<xsl:variable name="r1" select="substring-after( $link-annotation, ' ' )"/>		
 		<xsl:variable name="l1" select="normalize-space( substring( $link-annotation, 1, string-length($link-annotation) - string-length( $r1 ) ) )"/>
-		<xsl:if test="$l1">
-			<xsl:variable name="link-entity" select="substring-before( $l1, '(' )"/>
-			<xsl:variable name="semantics" select="substring-before( substring-after( $l1, '(' ), ')' )"/>
-			<xsl:variable name="direction" select="substring-after( substring-after( $l1, '(' ), ')' )"/>
-			<xsl:value-of select="$prefix"/><xsl:text>the </xsl:text><xsl:value-of select="substring-after( $link-entity, 'https://w3id.org/cerif/model#' )"/><xsl:text> linking entity (`&lt;</xsl:text><xsl:value-of select="$link-entity"/><xsl:text>&gt;`_) with the `&lt;</xsl:text><xsl:value-of select="$semantics"/><xsl:text>&gt;`_ semantics</xsl:text><xsl:if test="$direction"><xsl:text> (direction </xsl:text><xsl:value-of select="$direction"/>)</xsl:if>
-			<xsl:call-template name="process-link-annotation">
-				<xsl:with-param name="link-annotation" select="$r1"/>
-				<xsl:with-param name="prefix" select="'; '"/>
-			</xsl:call-template>
-		</xsl:if>
+		<xsl:choose>
+			<xsl:when test="$l1">
+				<xsl:variable name="link-entity" select="substring-before( $l1, '(' )"/>
+				<xsl:variable name="semantics" select="substring-before( substring-after( $l1, '(' ), ')' )"/>
+				<xsl:variable name="direction" select="substring-after( substring-after( $l1, '(' ), ')' )"/>
+				<xsl:value-of select="$prefix"/><xsl:text>the </xsl:text><xsl:value-of select="substring-after( $link-entity, 'https://w3id.org/cerif/model#' )"/><xsl:text> linking entity </xsl:text><xsl:if test="contains( substring-after( $link-entity, 'https://w3id.org/cerif/model#' ), '.' )">attribute </xsl:if><xsl:text>(`&lt;</xsl:text><xsl:value-of select="$link-entity"/><xsl:text>&gt;`_) with the `&lt;</xsl:text><xsl:value-of select="$semantics"/><xsl:text>&gt;`_ semantics</xsl:text><xsl:if test="$direction"><xsl:text> (direction </xsl:text><xsl:value-of select="$direction"/>)</xsl:if>
+				<xsl:call-template name="process-link-annotation">
+					<xsl:with-param name="link-annotation" select="$r1"/>
+					<xsl:with-param name="prefix" select="'; '"/>
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text>
+</xsl:text>
+			</xsl:otherwise>
+		</xsl:choose>
     </xsl:template>
 	
 	<xsl:template name="document-use">
@@ -476,20 +488,16 @@ Internal Identifier
 		<xsl:choose>
 			<xsl:when test="count($x/*) &gt; 1">
 				<xsl:text>:Format: any of:
-
 </xsl:text>
 				<xsl:for-each select="$x/*">
-					<xsl:text>  * </xsl:text>
-					<xsl:value-of select="."/>
 					<xsl:text>
-</xsl:text>
+  * </xsl:text>
+					<xsl:value-of select="."/>
 				</xsl:for-each>
 			</xsl:when>
 			<xsl:when test="count($x/*) = 1">
 				<xsl:text>:Format: </xsl:text>
 				<xsl:value-of select="$x/*"/>
-				<xsl:text>
-</xsl:text>
 			</xsl:when>
 		</xsl:choose>
 	</xsl:template>
@@ -518,6 +526,10 @@ Internal Identifier
 
 	<xsl:template match="xs:restriction" mode="format">
 		<xsl:apply-templates select="key( 'schema-components-by-name', string(@base) )" mode="#current"/>
+		<xsl:apply-templates mode="#current"/>
+	</xsl:template>
+	
+	<xsl:template match="xs:simpleContent" mode="format">
 		<xsl:apply-templates mode="#current"/>
 	</xsl:template>
 

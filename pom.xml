@@ -55,6 +55,7 @@
                                 <exclude>**/*.xslt</exclude>
 								<exclude>scripts/*</exclude>
 								<exclude>cached/*</exclude>
+								<exclude>**/00-preparations/**/*</exclude>
 							</excludes>
 						</validationSet>
 					</validationSets>
@@ -177,7 +178,7 @@
 			<plugin>
 			  <groupId>com.helger.maven</groupId>
 			  <artifactId>ph-schematron-maven-plugin</artifactId>
-			  <version>5.0.4</version>
+			  <version>6.3.0</version>
 			  <executions>
 			    <execution>
 			      <goals>
@@ -188,10 +189,6 @@
 			      	<schematronProcessingEngine>schematron</schematronProcessingEngine>
 			      	<xmlDirectory>samples</xmlDirectory>
 			      	<svrlErrorDirectory>samples/_schematron_output</svrlErrorDirectory>
-					<catalogs>
-						<catalog>schemas/cached/catalog.xml</catalog>
-						<catalog>schemas/catalog.xml</catalog>
-					</catalogs>
 			      </configuration>
 			    </execution>
 			  </executions>

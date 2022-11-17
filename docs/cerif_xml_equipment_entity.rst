@@ -11,7 +11,7 @@ Equipment
 
 Internal Identifier
 ^^^^^^^^^^^^^^^^^^^
-:Use: mandatory (1)
+:Use: mandatory (1) in top level entity. When embedded in other entities the Internal Identifier must be included only for managed information (i.e. entities that have a concrete record in the local CRIS system). See `Metadata representation in CERIF XML <https://openaire-guidelines-for-cris-managers.readthedocs.io/en/v1.1.1/implementation.html#metadata-representation-in-cerif-xml>`_
 :Representation: XML attribute ``id``
 :CERIF: the EquipmentIdentifier attribute (`<https://w3id.org/cerif/model#Equipment.EquipmentIdentifier>`_)
 
@@ -66,6 +66,7 @@ Owner
 :Use: optional, possibly multiple (0..*)
 :Representation: XML element ``Owner`` with embedded XML element ``OrgUnit`` or ``Person``. A ``DisplayName`` may be specified, too.
 :CERIF: the Person_Service linking entity (`<https://w3id.org/cerif/model#Person_Service>`_) with the `<https://w3id.org/cerif/vocab/PersonResearchInfrastructureRoles#Owner>`_ semantics; the OrganisationUnit_Service linking entity (`<https://w3id.org/cerif/model#OrganisationUnit_Service>`_) with the `<https://w3id.org/cerif/vocab/OrganisationResearchInfrastructureRoles#Owner>`_ semantics
+
 
 
 
